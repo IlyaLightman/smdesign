@@ -1,8 +1,9 @@
 const fs = require('fs')
+require('dotenv').config()
 
 const { getProducts } = require('./index')
 
-const fileName = 'test.txt'
+const fileName = process.env.TEST_FILE
 
 const check = async () => {
     const products = getProducts()
@@ -10,9 +11,13 @@ const check = async () => {
     console.log(fileName)
     let productsCount = 0
 
-    for await (let prod of products) {
-        fs.appendFileSync(fileName, JSON.stringify(prod, null, '\t') + '\n')
-        productsCount++
+    const fileStream = fs.createWriteStream(fileName)
+
+    for await (let page of products) {
+        page.forEach(prod => {
+            fileStream.write(`${JSON.stringify(prod, null, '\t')} \n`)
+            productsCount++
+        })
     }
 
     console.log(productsCount)
